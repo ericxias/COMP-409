@@ -139,12 +139,11 @@ public class SnakesAndLadders {
                 @Override
                 public void run() {
                     while (!Thread.currentThread().isInterrupted()) {
-                        Random newRandom = new Random();
-                        if (newRandom.nextInt(2) == 0){
+                        if (random.nextInt(2) == 0){
                             int head, tail;
                             do {
-                                head = newRandom.nextInt(BOARD_SIZE - 1) + 1;
-                                tail = newRandom.nextInt(BOARD_SIZE - 1) + 1;
+                                head = random.nextInt(BOARD_SIZE - 1) + 1;
+                                tail = random.nextInt(BOARD_SIZE - 1) + 1;
                             } while (head <= tail || board[head].getType() != Cell.CellType.REGULAR || 
                             board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10));
 
@@ -158,8 +157,8 @@ public class SnakesAndLadders {
                         } else {
                             int top, bottom;
                             do {
-                                top = newRandom.nextInt(BOARD_SIZE - 1) + 1;
-                                bottom = newRandom.nextInt(BOARD_SIZE - 1) + 1;
+                                top = random.nextInt(BOARD_SIZE - 1) + 1;
+                                bottom = random.nextInt(BOARD_SIZE - 1) + 1;
                             } while (top >= bottom || board[top].getType() != Cell.CellType.REGULAR ||
                             board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10));
 
@@ -188,12 +187,50 @@ public class SnakesAndLadders {
                 @Override
                 public void run() {
                     while (!Thread.currentThread().isInterrupted()) {
-                        
+                        synchronized (board) {
+                            if (random.nextInt(2) == 0 && !snakes.isEmpty()){
+                                int[] snake = snakes.get(random.nextInt(snakes.size()));
+                                board[snake[0]].setType(Cell.CellType.REGULAR);
+                                board[snake[1]].setType(Cell.CellType.REGULAR);
+                                board[snake[1]].setDestination(snake[1]);
+                                snakes.remove(snake);
+                                System.out.println("Remover snake" + snake[0] + " " + snake[1]);
+                            } else if (!ladders.isEmpty()){
+                                int[] ladder = ladders.get(random.nextInt(ladders.size()));
+                                board[ladder[0]].setType(Cell.CellType.REGULAR);
+                                board[ladder[1]].setType(Cell.CellType.REGULAR);
+                                board[ladder[1]].setDestination(ladder[1]);
+                                ladders.remove(ladder);
+                                System.out.println("Remover ladder" + ladder[0] + " " + ladder[1]);
+                            }
+                        }
+
+                        try {
+                            Thread.sleep(j);
+                        } catch (InterruptedException e) {
+                            break;
+                        }
                     }
                 }
             });
 
+            player.start();
+            adder.start();
+            remover.start();
 
+            // main thread sleeps for s seconds, then stops the simulation
+            try {
+                // convert ms to s
+                Thread.sleep(s * 1000);
+                player.interrupt();
+                adder.interrupt();
+                remover.interrupt();
+                player.join();
+                adder.join();
+                remover.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
              
 
         } catch (Exception e) {
