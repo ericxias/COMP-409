@@ -16,7 +16,7 @@ public class q1 {
     public static int width;
     public static int height;
     public static BufferedImage outputimage;
-    // int[] is used to store the x, y, r of a circle, used to store the circles of all snowmen on the output image
+    // int[] is used to store the x, y, r of a circle, used to store the circles of all snowmen on the output image, shared list
     public static List<int[]> circles = new ArrayList<>();
 
     public static void main(String[] args) {

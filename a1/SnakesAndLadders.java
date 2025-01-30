@@ -3,7 +3,6 @@ package a1;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
 
 public class SnakesAndLadders {
     public static final int BOARD_SIZE = 100;
@@ -14,6 +13,15 @@ public class SnakesAndLadders {
 
 
     public static void main(String[] args) {
+        if (args.length != 3) {
+            System.out.println("Usage: java SnakesAndLadders <k> <j> <s>");
+            System.exit(1);
+        }
+
+        int k = Integer.parseInt(args[0]);
+        int j = Integer.parseInt(args[1]);
+        int s = Integer.parseInt(args[2]);
+        
         for (int i = 0; i < BOARD_SIZE; i++) {
             board[i] = new Cell(i, Cell.CellType.REGULAR, -1);
             board[i].setDestination(i);
@@ -26,9 +34,10 @@ public class SnakesAndLadders {
                 // random locations
                 head = random.nextInt(BOARD_SIZE - 1) + 1;
                 tail = random.nextInt(BOARD_SIZE - 1) + 1;
-            // ensuring the tail is in a row higher than the head, both are regular cells, and not in the same row
+            // ensuring the tail is in a row higher than the head, both are regular cells, not start/end cells, 
+            // and not in the same row
             } while (head <= tail || board[head].getType() != Cell.CellType.REGULAR || 
-            board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10));
+            board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10) || head == 0 || tail == 99);
 
             board[head].setType(Cell.CellType.SNAKE);
             board[tail].setType(Cell.CellType.SNAKE);
@@ -42,9 +51,10 @@ public class SnakesAndLadders {
             do {
                 top = random.nextInt(BOARD_SIZE - 1) + 1;
                 bottom = random.nextInt(BOARD_SIZE - 1) + 1;
-            // ensuring the top is in a row higher than the bottom, both are regular cells, and not in the same row
+            // ensuring the top is in a row higher than the bottom, both are regular cells not start/end cells,
+            // and not in the same row
             } while (top >= bottom || board[top].getType() != Cell.CellType.REGULAR ||
-            board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10));
+            board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10) || top == 99 || bottom == 0);
 
             board[top].setType(Cell.CellType.LADDER);
             board[bottom].setType(Cell.CellType.LADDER);
@@ -53,7 +63,7 @@ public class SnakesAndLadders {
         }
 
         try {
-            // print the board
+            // print the board: 0 = top left cell, 99 = bottom right cell
             for (int i = 0; i < BOARD_SIZE; i++) {
                 System.out.print(i + " ");
                 if (board[i].getType() == Cell.CellType.SNAKE) {
@@ -86,37 +96,32 @@ public class SnakesAndLadders {
              * associated with them. Pre-populate adder log with initial snake/ladder additions.
              * One player thread plays the game, starting at the beginning of the board, and moves according to the dice roll.
              * If arriving at a cell containing a snake tail, moves to the snake head. If arriving at a cell containing a ladder bottom,
-             * moves to the ladder top. After each move, it sleeps for 20-50 ms at random. Once it reaches/goes past top left cell, sleeps for 100 ms and starts again
+             * moves to the ladder top. After each move, it sleeps for 20-50 ms at random. Once it reaches/goes past top left cell, 
+             * sleeps for 100 ms and starts again
              */
-
-            if (args.length != 3) {
-                System.out.println("Usage: java SnakesAndLadders <k> <j> <s>");
-                System.exit(1);
-            }
-
-            int k = Integer.parseInt(args[0]);
-            int j = Integer.parseInt(args[1]);
-            int s = Integer.parseInt(args[2]);
 
             Thread player = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    int position = 0;
+                    int position = 99;
                     while (!Thread.currentThread().isInterrupted()) {
                         int diceRoll = random.nextInt(6) + 1;
-                        position += diceRoll;
+                        position -= diceRoll;
 
-                        if (position >= 99) {
+                        if (position <= 0) {
                             System.out.println("Player wins");
                             try {
                                 Thread.sleep(100);
                             } catch (InterruptedException e) {
                                 break;
                             }
-                            position = 0;
+                            position = 99;
+                        } else {
+                            System.out.println("Player " + position);
                         }
 
-                        if (board[position].getType() == Cell.CellType.SNAKE || board[position].getType() == Cell.CellType.LADDER && board[position].getDestination() != position) {
+                        if ((board[position].getType() == Cell.CellType.SNAKE || 
+                        board[position].getType() == Cell.CellType.LADDER) && board[position].getDestination() != position) {
                             System.out.println("Player " + position + " " + board[position].getDestination());
                             position = board[position].getDestination();
                         }
@@ -124,7 +129,7 @@ public class SnakesAndLadders {
                         try {
                             Thread.sleep(random.nextInt(31) + 20);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            break;
                         }
                     }
                 }
@@ -145,7 +150,7 @@ public class SnakesAndLadders {
                                 head = random.nextInt(BOARD_SIZE - 1) + 1;
                                 tail = random.nextInt(BOARD_SIZE - 1) + 1;
                             } while (head <= tail || board[head].getType() != Cell.CellType.REGULAR || 
-                            board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10));
+                            board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10) || head == 99 || tail == 0);
 
                             synchronized (board) {
                                 board[head].setType(Cell.CellType.SNAKE);
@@ -153,14 +158,14 @@ public class SnakesAndLadders {
                                 board[tail].setDestination(head);
                                 snakes.add(new int[]{head, tail});
                             }
-                            System.out.println("Adder snake" + head + " " + tail);
+                            System.out.println("Adder snake " + head + " " + tail);
                         } else {
                             int top, bottom;
                             do {
                                 top = random.nextInt(BOARD_SIZE - 1) + 1;
                                 bottom = random.nextInt(BOARD_SIZE - 1) + 1;
                             } while (top >= bottom || board[top].getType() != Cell.CellType.REGULAR ||
-                            board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10));
+                            board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10) || top == 0 || bottom == 99);
 
                             synchronized (board) {
                                 board[top].setType(Cell.CellType.LADDER);
@@ -168,7 +173,18 @@ public class SnakesAndLadders {
                                 board[bottom].setDestination(top);
                                 ladders.add(new int[]{top, bottom});
                             }
-                            System.out.println("Adder ladder" + top + " " + bottom);
+                            System.out.println("Adder ladder " + top + " " + bottom);
+
+                            // debugging: print the snakes and ladders
+                            /*System.out.println("Snakes:");
+                            for (int[] snake : snakes) {
+                                System.out.println(snake[0] + " " + snake[1]);
+                            }
+
+                            System.out.println("Ladders:");
+                            for (int[] ladder : ladders) {
+                                System.out.println(ladder[0] + " " + ladder[1]);
+                            } */
                         }
                         try {
                             Thread.sleep(k);
@@ -180,8 +196,8 @@ public class SnakesAndLadders {
             });
 
             /*
-             * This Remover thread is an infinite loop removing snakes or ladders. The remover looks for either a snake or ladder 
-             * and removes it from the board. Once it succeeds it sleeps for j ms
+             * This Remover thread is an infinite loop removing snakes or ladders. The remover looks for either a snake 
+             * or ladder and removes it from the board. Once it succeeds it sleeps for j ms
              */
             Thread remover = new Thread(new Runnable() {
                 @Override
@@ -194,16 +210,27 @@ public class SnakesAndLadders {
                                 board[snake[1]].setType(Cell.CellType.REGULAR);
                                 board[snake[1]].setDestination(snake[1]);
                                 snakes.remove(snake);
-                                System.out.println("Remover snake" + snake[0] + " " + snake[1]);
+                                System.out.println("Remover snake " + snake[0] + " " + snake[1]);
                             } else if (!ladders.isEmpty()){
                                 int[] ladder = ladders.get(random.nextInt(ladders.size()));
                                 board[ladder[0]].setType(Cell.CellType.REGULAR);
                                 board[ladder[1]].setType(Cell.CellType.REGULAR);
                                 board[ladder[1]].setDestination(ladder[1]);
                                 ladders.remove(ladder);
-                                System.out.println("Remover ladder" + ladder[0] + " " + ladder[1]);
+                                System.out.println("Remover ladder " + ladder[0] + " " + ladder[1]);
                             }
+                            // debugging: print the snakes and ladders
+                            /*System.out.println("Snakes:");
+                            for (int[] snake : snakes) {
+                                System.out.println(snake[0] + " " + snake[1]);
+                            }
+
+                            System.out.println("Ladders:");
+                            for (int[] ladder : ladders) {
+                                System.out.println(ladder[0] + " " + ladder[1]);
+                            }*/
                         }
+
 
                         try {
                             Thread.sleep(j);
@@ -222,15 +249,50 @@ public class SnakesAndLadders {
             try {
                 // convert ms to s
                 Thread.sleep(s * 1000);
-                player.interrupt();
-                adder.interrupt();
-                remover.interrupt();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
+            player.interrupt();
+            adder.interrupt();
+            remover.interrupt();
+
+            try {
                 player.join();
                 adder.join();
                 remover.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            // debugging: print final state of the board
+            // print the board
+            for (int i = 0; i < BOARD_SIZE; i++) {
+                System.out.print(i + " ");
+                if (board[i].getType() == Cell.CellType.SNAKE) {
+                    System.out.print("S" + board[i].getDestination() + " ");
+                } else if (board[i].getType() == Cell.CellType.LADDER) {
+                    System.out.print("L" + board[i].getDestination() + " ");
+                } else {
+                    System.out.print("R ");
+                }
+                if (i % 10 == 9) {
+                    System.out.println();
+                }
+            }
+
+            // print the snakes
+            System.out.println("Snakes:");
+            for (int[] snake : snakes) {
+                System.out.println(snake[0] + " " + snake[1]);
+            }
+
+            // print the ladders
+            System.out.println("Ladders:");
+            for (int[] ladder : ladders) {
+                System.out.println(ladder[0] + " " + ladder[1]);
+            }
+
              
 
         } catch (Exception e) {
