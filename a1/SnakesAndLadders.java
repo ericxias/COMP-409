@@ -10,6 +10,7 @@ public class SnakesAndLadders {
     private static List<int[]> snakes = new ArrayList<>();
     private static List<int[]> ladders = new ArrayList<>();
     private static Random random = new Random();
+    private volatile static List<String[]> log = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -21,7 +22,8 @@ public class SnakesAndLadders {
         int k = Integer.parseInt(args[0]);
         int j = Integer.parseInt(args[1]);
         int s = Integer.parseInt(args[2]);
-        
+        long startTime = System.currentTimeMillis();
+
         for (int i = 0; i < BOARD_SIZE; i++) {
             board[i] = new Cell(i, Cell.CellType.REGULAR, -1);
             board[i].setDestination(i);
@@ -43,6 +45,7 @@ public class SnakesAndLadders {
             board[tail].setType(Cell.CellType.SNAKE);
             board[tail].setDestination(head);
             snakes.add(new int[]{head, tail});
+            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Adder snake " + head + " " + tail});
         }
 
         // create ladders
@@ -60,6 +63,7 @@ public class SnakesAndLadders {
             board[bottom].setType(Cell.CellType.LADDER);
             board[bottom].setDestination(top);
             ladders.add(new int[]{top, bottom});
+            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Adder ladder " + top + " " + bottom});
         }
 
         try {
@@ -109,7 +113,8 @@ public class SnakesAndLadders {
                         position -= diceRoll;
 
                         if (position <= 0) {
-                            System.out.println("Player wins");
+                            //System.out.println("Player wins");
+                            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Player wins"});
                             try {
                                 Thread.sleep(100);
                             } catch (InterruptedException e) {
@@ -117,12 +122,14 @@ public class SnakesAndLadders {
                             }
                             position = 99;
                         } else {
-                            System.out.println("Player " + position);
+                            //System.out.println("Player " + position);
+                            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Player " + position});
                         }
 
                         if ((board[position].getType() == Cell.CellType.SNAKE || 
                         board[position].getType() == Cell.CellType.LADDER) && board[position].getDestination() != position) {
-                            System.out.println("Player " + position + " " + board[position].getDestination());
+                            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Player " + position + " " + board[position].getDestination()});
+                            //System.out.println("Player " + position + " " + board[position].getDestination());
                             position = board[position].getDestination();
                         }
                         
@@ -158,7 +165,8 @@ public class SnakesAndLadders {
                                 board[tail].setDestination(head);
                                 snakes.add(new int[]{head, tail});
                             }
-                            System.out.println("Adder snake " + head + " " + tail);
+                            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Adder snake " + head + " " + tail});
+                            //System.out.println("Adder snake " + head + " " + tail);
                         } else {
                             int top, bottom;
                             do {
@@ -173,7 +181,8 @@ public class SnakesAndLadders {
                                 board[bottom].setDestination(top);
                                 ladders.add(new int[]{top, bottom});
                             }
-                            System.out.println("Adder ladder " + top + " " + bottom);
+                            log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Adder ladder " + top + " " + bottom});
+                            //System.out.println("Adder ladder " + top + " " + bottom);
 
                             // debugging: print the snakes and ladders
                             /*System.out.println("Snakes:");
@@ -210,14 +219,16 @@ public class SnakesAndLadders {
                                 board[snake[1]].setType(Cell.CellType.REGULAR);
                                 board[snake[1]].setDestination(snake[1]);
                                 snakes.remove(snake);
-                                System.out.println("Remover snake " + snake[0] + " " + snake[1]);
+                                log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Remover snake " + snake[0] + " " + snake[1]});
+                                //System.out.println("Remover snake " + snake[0] + " " + snake[1]);
                             } else if (!ladders.isEmpty()){
                                 int[] ladder = ladders.get(random.nextInt(ladders.size()));
                                 board[ladder[0]].setType(Cell.CellType.REGULAR);
                                 board[ladder[1]].setType(Cell.CellType.REGULAR);
                                 board[ladder[1]].setDestination(ladder[1]);
                                 ladders.remove(ladder);
-                                System.out.println("Remover ladder " + ladder[0] + " " + ladder[1]);
+                                log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Remover ladder " + ladder[0] + " " + ladder[1]});
+                                //System.out.println("Remover ladder " + ladder[0] + " " + ladder[1]);
                             }
                             // debugging: print the snakes and ladders
                             /*System.out.println("Snakes:");
@@ -249,21 +260,16 @@ public class SnakesAndLadders {
             try {
                 // convert ms to s
                 Thread.sleep(s * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            
-            player.interrupt();
-            adder.interrupt();
-            remover.interrupt();
-
-            try {
+                player.interrupt();
+                adder.interrupt();
+                remover.interrupt();
                 player.join();
                 adder.join();
                 remover.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            
 
             // debugging: print final state of the board
             // print the board
@@ -291,6 +297,12 @@ public class SnakesAndLadders {
             System.out.println("Ladders:");
             for (int[] ladder : ladders) {
                 System.out.println(ladder[0] + " " + ladder[1]);
+            }
+
+            // sort log by timestamp and print log
+            log.sort((a, b) -> Long.compare(Long.parseLong(a[0]), Long.parseLong(b[0])));
+            for (String[] entry: log) {
+                System.out.println(entry[0] + " " + entry[1]);
             }
 
              
