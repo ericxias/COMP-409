@@ -94,8 +94,8 @@ public class q1 {
 
     private static void drawSnowman(Random random) {
         // initialize snowman parameters
-        // Lower bound size -> 8, Upper bound size -> 50
-        int size = 8 + random.nextInt(42);
+        // Lower bound size -> 8, Upper bound size -> 32
+        int size = 8 + random.nextInt(24);
         String[] orientations = {"up", "down", "left", "right"};
         String orientation = orientations[random.nextInt(4)];
         int x, y;
