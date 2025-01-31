@@ -20,7 +20,7 @@ public class SnakesAndLadders {
     public static void main(String[] args) {
         // Check and parse input
         if (args.length != 3) {
-            System.out.println("Usage: java SnakesAndLadders <k> <j> <s>");
+            System.out.println("Usage: java SnakesAndLadders.java <k> <j> <s>");
             System.exit(1);
         }
 
@@ -73,36 +73,6 @@ public class SnakesAndLadders {
         }
 
         try {
-            /* 
-            // debugging print the board: 0 = bottom left cell, 99 = top right cell
-            for (int i = 9; i >= 0; i--) {
-                for (int x = 0; x < 10; x++ ){
-                    System.out.print(i * 10 + x + " ");
-                    if (board[i * 10 + x].getType() == Cell.CellType.SNAKE) {
-                        System.out.print("S" + board[i * 10 + x].getDestination() + " ");
-                    } else if (board[i * 10 + x].getType() == Cell.CellType.LADDER) {
-                        System.out.print("L" + board[i * 10 + x].getDestination() + " ");
-                    } else {
-                        System.out.print("R ");
-                    }
-                    if ((i * 10 + x) % 10 == 9) {
-                        System.out.println();
-                    }
-                }
-            }
-
-            // print the snakes
-            System.out.println("Snakes:");
-            for (int[] snake : snakes) {
-                System.out.println(snake[0] + " " + snake[1]);
-            }
-
-            // print the ladders
-            System.out.println("Ladders:");
-            for (int[] ladder : ladders) {
-                System.out.println(ladder[0] + " " + ladder[1]);
-            } */
-
             // Player thread
             Thread player = new Thread(new Runnable() {
                 @Override
@@ -190,16 +160,6 @@ public class SnakesAndLadders {
                             }
                             log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Adder ladder " + top + " " + bottom});
 
-                            // debugging: print the snakes and ladders
-                            /*System.out.println("Snakes:");
-                            for (int[] snake : snakes) {
-                                System.out.println(snake[0] + " " + snake[1]);
-                            }
-
-                            System.out.println("Ladders:");
-                            for (int[] ladder : ladders) {
-                                System.out.println(ladder[0] + " " + ladder[1]);
-                            } */
                         }
                         try {
                             Thread.sleep(k);
@@ -237,16 +197,6 @@ public class SnakesAndLadders {
                                 log.add(new String[]{String.format("%08d", System.currentTimeMillis() - startTime), "Remover ladder " + ladder[0] + " " + ladder[1]});
                             }
                             
-                            // debugging: print the snakes and ladders
-                            /*System.out.println("Snakes:");
-                            for (int[] snake : snakes) {
-                                System.out.println(snake[0] + " " + snake[1]);
-                            }
-
-                            System.out.println("Ladders:");
-                            for (int[] ladder : ladders) {
-                                System.out.println(ladder[0] + " " + ladder[1]);
-                            }*/
                         }
 
 
@@ -275,37 +225,6 @@ public class SnakesAndLadders {
                 remover.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-            
-
-            // debugging: print final state of the board
-            // print the board
-            for (int i = 9; i >= 0; i--) {
-                for (int x = 0; x < 10; x++ ){
-                    System.out.print(i * 10 + x + " ");
-                    if (board[i * 10 + x].getType() == Cell.CellType.SNAKE) {
-                        System.out.print("S" + board[i * 10 + x].getDestination() + " ");
-                    } else if (board[i * 10 + x].getType() == Cell.CellType.LADDER) {
-                        System.out.print("L" + board[i * 10 + x].getDestination() + " ");
-                    } else {
-                        System.out.print("R ");
-                    }
-                    if ((i * 10 + x) % 10 == 9) {
-                        System.out.println();
-                    }
-                }
-            }
-
-            // print the snakes
-            System.out.println("Snakes:");
-            for (int[] snake : snakes) {
-                System.out.println(snake[0] + " " + snake[1]);
-            }
-
-            // print the ladders
-            System.out.println("Ladders:");
-            for (int[] ladder : ladders) {
-                System.out.println(ladder[0] + " " + ladder[1]);
             }
 
             // sort log by timestamp and print log

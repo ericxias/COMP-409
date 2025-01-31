@@ -24,7 +24,7 @@ public class q1 {
         try {
             // Check and parse input
             if (args.length != 4) {
-                System.out.println("Usage: java q1 <width> <height> <number of threads> <number of snowman>");
+                System.out.println("Usage: java q1.java <width> <height> <number of threads> <number of snowman>");
                 System.exit(1);
             }
 
@@ -94,8 +94,8 @@ public class q1 {
 
     private static void drawSnowman(Random random) {
         // initialize snowman parameters
-        // Lower bound size -> 8, Upper bound size -> 32
-        int size = 8 + random.nextInt(24);
+        // Lower bound size -> 8, Upper bound size -> 50
+        int size = 8 + random.nextInt(42);
         String[] orientations = {"up", "down", "left", "right"};
         String orientation = orientations[random.nextInt(4)];
         int x, y;
@@ -108,7 +108,6 @@ public class q1 {
             x = random.nextInt(width);
             y = random.nextInt(height);
             snowman = snowmanCircles(x, y, size, orientation);
-
             synchronized (circles) {
                 overlap = isOverlap(snowman);
                 //System.out.println(Thread.currentThread().getId() + " overlap: " + overlap);
