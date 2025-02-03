@@ -7,8 +7,8 @@ import java.util.Random;
 public class SnakesAndLadders {
 
     // Parameters
-    public static final int BOARD_SIZE = 100;
-    private static Cell[] board = new Cell[BOARD_SIZE];
+    // board: 10x10 array of cells
+    private static Cell[] board = new Cell[100];
     // shared list of snakes and ladders between adder/remover threads
     private static List<int[]> snakes = new ArrayList<>();
     private static List<int[]> ladders = new ArrayList<>();
@@ -39,9 +39,9 @@ public class SnakesAndLadders {
         for (int i = 0; i < 10; i++){
             int head, tail;
             do {
-                // random locations
-                head = random.nextInt(BOARD_SIZE - 1) + 1;
-                tail = random.nextInt(BOARD_SIZE - 1) + 1;
+                // random locations on board
+                head = random.nextInt(99) + 1;
+                tail = random.nextInt(99) + 1;
             // ensuring the tail is in a row higher than the head, both are regular cells, not start/end cells, and not in the same row
             } while (head >= tail || board[head].getType() != Cell.CellType.REGULAR || 
             board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10) || head == 0 || tail == 99);
@@ -58,8 +58,8 @@ public class SnakesAndLadders {
         for (int i = 0; i < 9; i++){
             int top, bottom;
             do {
-                top = random.nextInt(BOARD_SIZE - 1) + 1;
-                bottom = random.nextInt(BOARD_SIZE - 1) + 1;
+                top = random.nextInt(99) + 1;
+                bottom = random.nextInt(99) + 1;
             // ensuring the top is in a row higher than the bottom, both are regular cells not start/end cells, and not in the same row
             } while (top <= bottom || board[top].getType() != Cell.CellType.REGULAR ||
             board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10) || top == 99 || bottom == 0);
@@ -127,8 +127,8 @@ public class SnakesAndLadders {
 
                             // ensuring the tail is in a row higher than the head, both are regular cells, not start/end cells, and not in the same row
                             do {
-                                head = random.nextInt(BOARD_SIZE - 1) + 1;
-                                tail = random.nextInt(BOARD_SIZE - 1) + 1;
+                                head = random.nextInt(99) + 1;
+                                tail = random.nextInt(99) + 1;
                             } while (head >= tail || board[head].getType() != Cell.CellType.REGULAR || 
                             board[tail].getType() != Cell.CellType.REGULAR || (head/10) == (tail/10) || head == 99 || tail == 0);
 
@@ -146,8 +146,8 @@ public class SnakesAndLadders {
 
                             // ensuring the top is in a row higher than the bottom, both are regular cells not start/end cells, and not in the same row
                             do {
-                                top = random.nextInt(BOARD_SIZE - 1) + 1;
-                                bottom = random.nextInt(BOARD_SIZE - 1) + 1;
+                                top = random.nextInt(99) + 1;
+                                bottom = random.nextInt(99) + 1;
                             } while (top <= bottom || board[top].getType() != Cell.CellType.REGULAR ||
                             board[bottom].getType() != Cell.CellType.REGULAR || (top/10) == (bottom/10) || top == 0 || bottom == 99);
 
