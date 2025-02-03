@@ -33,7 +33,7 @@ public class q1 {
             t = Integer.parseInt(args[2]);
             n = Integer.parseInt(args[3]);
 
-            // once we know what size we want we can creat an empty image
+            // once we know what size we want we can create an empty image
             outputimage = new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);
 
             // ------------------------------------
@@ -60,20 +60,33 @@ public class q1 {
             long startTime = System.currentTimeMillis();
 
             for (int i = 0; i < t; i++) {
+                final int threadId = i;
                 threads[i] = new Thread(new Runnable() {
                     // Each thread will draw n/t snowmen
                     @Override
                     public void run() {
                         Random random = new Random();
-                        for (int j = 0; j < n/t; j++) {
-                            drawSnowman(random);
+                        // If n is not divisible by t, the initial n % t threads draw an additional snowman 
+                        if (n % t != 0) {
+                            int snowmenPerThread = n / t;
+                            if (threadId < n % t) {
+                                snowmenPerThread++;
+                            }
+                            for (int j = 0; j < snowmenPerThread; j++) {
+                                drawSnowman(random);
+                            }
+                        }
+                        else {
+                            for (int j = 0; j < n / t; j++) {
+                                drawSnowman(random);
+                            }
                         }
                     }
                 });
                 threads[i].start();
             }
 
-            // join the threads
+            // join to wait for all threads to finish
             for (int i = 0; i < t; i++) {
                 threads[i].join();
             }
@@ -100,28 +113,46 @@ public class q1 {
         String orientation = orientations[random.nextInt(4)];
         int x, y;
 
-        // array to store the circles of the snowman
-        List<int[]> snowman;
+        // list to store the circles of the snowman being drawn
+        List<int[]> snowman = null;
         boolean overlap;
         boolean outOfBounds;
         do {
+            List<int[]> snowmanCircles = new ArrayList<>();
             x = random.nextInt(width);
             y = random.nextInt(height);
-            snowman = snowmanCircles(x, y, size, orientation);
+            // calculate the dimensions of the snowman and add the circles to the list
+            for (int i = 0; i < 3; i++) {
+                snowmanCircles.add(new int[]{x, y, size});
+                switch (orientation) {
+                    case "up":
+                        y -= size*1.7;
+                        break;
+                    case "down":
+                        y += size*1.7;
+                        break;
+                    case "left":
+                        x -= size*1.7;
+                        break;
+                    case "right":
+                        x += size*1.7;
+                        break;
+                }
+                size = (int) (size * 0.7);
+            }
+
             synchronized (circles) {
-                overlap = isOverlap(snowman);
-                //System.out.println(Thread.currentThread().getId() + " overlap: " + overlap);
-                outOfBounds = isOutOfBounds(snowman);
-                //System.out.println(Thread.currentThread().getId() + " OOB " + outOfBounds);
+                overlap = isOverlap(snowmanCircles);
+                outOfBounds = isOutOfBounds(snowmanCircles);
                 // add the snowman to the list of circles if it doesn't overlap with any existing snowman before any other thread checks for overlap
                 if (!overlap && !outOfBounds){
-                    circles.addAll(snowman);
+                    circles.addAll(snowmanCircles);
                 }
+                snowman = snowmanCircles;
             }
         } while (overlap || outOfBounds); // if the snowman overlaps with any existing snowman or is out of bounds, rerandomize x and y
 
         Color color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
-        //System.out.println(Thread.currentThread().getId() + " color: " + color);
 
         // draw the snowman
         for (int[] circle : snowman) {
@@ -129,30 +160,6 @@ public class q1 {
         }
     }
 
-    private static List<int[]> snowmanCircles(int x, int y, int size, String orientation) {
-        // calculate the circles of the snowman based on the orientation
-        List<int[]> snowman = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            snowman.add(new int[]{x, y, size});
-            switch (orientation) {
-                case "up":
-                    y -= size;
-                    break;
-                case "down":
-                    y += size;
-                    break;
-                case "left":
-                    x -= size;
-                    break;
-                case "right":
-                    x += size;
-                    break;
-            }
-            // reduce size by 0.7 for each circle
-            size = (int) (size * 0.7);
-        }
-        return snowman;
-    }
 
     private static boolean isOverlap(List<int[]> snowmanCircles) {
         // check if the snowman overlaps with any existing snowman on the output image
