@@ -65,13 +65,13 @@ public class q1 {
         // Draw grid
         for (int i = 0; i < n; i ++){
             for (int j = 0; j < n; j++){
-                System.out.print(grid[i][j]);
+                System.out.print(grid[i][j].getLetter());
             }
             System.out.println();
         }
 
         // Read and add words to the dictionary from dictionary.txt
-        File file2 = new File("dictionary.txt");
+        File file2 = new File("dict.txt");
         try (Scanner reader = new Scanner(file2)){
             while (reader.hasNextLine()){
                 String data = reader.nextLine().trim();
@@ -105,16 +105,57 @@ public class q1 {
                         // list to store moves
                         List<int[]> moves = new ArrayList<>();
                         moves.add(new int[]{x, y});
+                        System.out.println(x + " " + y + " " + grid[x][y].getLetter());
 
                         // pre-select a sequence of up to 7 random moves
-                        for (int j = 0; j < 6; j++){
+                        for (int j = 0; j < 7; j++){
                             int[] current = moves.get(moves.size() - 1);
                             int currx = current[0];
                             int curry = current[1];
                             int[] nextMove = getNextMove(currx, curry, n, moves);
                             moves.add(nextMove);
+                            System.out.println(nextMove[0] + " " + nextMove[1] + " " + grid[nextMove[0]][nextMove[1]].getLetter());
                         }
                         
+                        // check if sequence forms words (3 letters or more)
+                        for (int j = 3; j <= moves.size(); j++){
+                            String word = "";
+                            synchronized (grid){
+                                try {
+                                    for (int k = 0; k < j; k++){
+                                
+                                        int[] cell = moves.get(k);
+                                        word += grid[cell[0]][cell[1]].getLetter();
+
+                                        System.out.println(word);
+                                        grid[cell[0]][cell[1]].getLock().lock();
+                                        if (dictionary.contains(word.toLowerCase())){
+                                            System.out.println("Found word: " + word + grid[x][y].getWords());
+                                            if (!grid[x][y].getWords().contains(word)){
+                                                grid[x][y].addWord(word);
+                                            }
+                                            for (int z = 0; z < k + 1; z++  ){
+                                                int[] wordCell = moves.get(z);
+                                                if (!grid[wordCell[0]][wordCell[1]].getWords().contains(word)){
+                                                    grid[wordCell[0]][wordCell[1]].addWord(word);
+                                                }
+                                            }
+                                        }
+                                    }
+                           
+                                    } finally {
+                                        for (int z = 0; z < j; z ++){
+                                            int[] wordCell = moves.get(z);
+                                            grid[wordCell[0]][wordCell[1]].getLock().unlock();
+                                        }
+                                    }
+                                }
+                            }
+                            try {
+                                Thread.sleep(20);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                        }
                     }
                 }
             });
@@ -127,6 +168,21 @@ public class q1 {
                 threads[i].join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+        }
+
+        // iterate through all cells and print coordinates, and a space sperated list of words the cell contributed to
+        for (int i = 0; i < n; i++){
+            for (int j = 0; j < n; j++){
+                System.out.print(i + " " + j + " ");
+                List<String> words = grid[i][j].getWords();
+                for (int x = 0; x < words.size(); x++){
+                    System.out.print(words.get(x));
+                    if (x != words.size() - 1){
+                        System.out.print(" ");
+                    }
+                }
+                System.out.println();
             }
         }
 
