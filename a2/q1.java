@@ -15,7 +15,7 @@ public class q1 {
     public static Cell[][] grid;
     public static void main(String[] args){
         
-        if (args.length != 4){
+        if (args.length != 4 || Integer.parseInt(args[1]) < 4){
             System.out.println("Usage: java q1.java <s> <n> <t> <k>");
             System.exit(1);
         }
@@ -105,7 +105,7 @@ public class q1 {
                         // list to store moves
                         List<int[]> moves = new ArrayList<>();
                         moves.add(new int[]{x, y});
-                        System.out.println(x + " " + y + " " + grid[x][y].getLetter());
+                        // System.out.println(x + " " + y + " " + grid[x][y].getLetter());
 
                         // pre-select a sequence of up to 7 random moves
                         for (int j = 0; j < 7; j++){
@@ -114,7 +114,7 @@ public class q1 {
                             int curry = current[1];
                             int[] nextMove = getNextMove(currx, curry, n, moves);
                             moves.add(nextMove);
-                            System.out.println(nextMove[0] + " " + nextMove[1] + " " + grid[nextMove[0]][nextMove[1]].getLetter());
+                            // System.out.println(nextMove[0] + " " + nextMove[1] + " " + grid[nextMove[0]][nextMove[1]].getLetter());
                         }
                         
                         // check if sequence forms words (3 letters or more)
@@ -127,10 +127,10 @@ public class q1 {
                                         int[] cell = moves.get(k);
                                         word += grid[cell[0]][cell[1]].getLetter();
 
-                                        System.out.println(word);
+                                        // System.out.println(word);
                                         grid[cell[0]][cell[1]].getLock().lock();
                                         if (dictionary.contains(word.toLowerCase())){
-                                            System.out.println("Found word: " + word + grid[x][y].getWords());
+                                            // System.out.println("Found word: " + word + grid[x][y].getWords());
                                             if (!grid[x][y].getWords().contains(word)){
                                                 grid[x][y].addWord(word);
                                             }
