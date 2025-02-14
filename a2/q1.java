@@ -16,7 +16,7 @@ public class q1 {
     public static void main(String[] args){
         
         if (args.length != 4 || Integer.parseInt(args[1]) < 4){
-            System.out.println("Usage: java q1.java <s> <n> <t> <k>");
+            System.out.println("Usage: java q1.java <s> <n > 4> <t> <k>");
             System.exit(1);
         }
 
