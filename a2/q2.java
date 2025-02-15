@@ -21,24 +21,98 @@ public class q2 {
         try {
             University university = new University(k, q);
             
+            // k TAs, 1 professor, 5 students
             Thread[] threads = new Thread[k+6];
-            Thread professorThread = new Thread(new Professor(university));
-            // professorThread.start();
+
+            // Professor Thread
+            Thread professorThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // thread keeps acting until it gets interrupted when all students arrive
+                    while (!Thread.currentThread().isInterrupted()){
+                        try {
+                            // continuously checks if 3 TA's are available to answer questions
+                            university.answerQuestions();
+                            if (university.allStudentsArrived){
+                                break;
+                            }
+                        } catch (InterruptedException e) {
+                            // when student interrupts the professor thread, the professor thread will wake up all students (signalling all) then thread stops
+                            university.lock.lock();
+                            try {
+                                System.out.println("a grad student interrupts a TA session");
+                                System.out.println("P wakes their grad students");
+                                university.studentCondition.signalAll();
+                                System.out.println("all grad students have been woken");
+                            } finally {
+                                university.lock.unlock();
+                            }
+                            break;
+                        }
+                    }
+                }
+            });
             threads[0] = professorThread;
             threads[0].start();
             
-
+            // k TA Threads
             for (int i = 0; i < k; i++) {
-                threads[i+1] = new Thread(new TA(i, university));
+                final int taId = i;
+                threads[i+1] = new Thread(new Runnable(){
+                    Random random = new Random();
+                    @Override
+                    public void run() {
+                        // thread keeps acting until it gets interrupted when all students arrive
+                        while(!Thread.currentThread().isInterrupted()){
+                            try {
+                                // TA sleeps for 1 second then checks if it has a question with q probability
+                                Thread.sleep(1000);
+                                if (random.nextInt(100) < university.q && !university.allStudentsArrived){
+                                    System.out.println("a TA " + taId + " comes up with a question");
+                                    university.taQuestion(taId, Thread.currentThread());
+                                
+                                // if all students have arrived, the TA thread will be interrupted    
+                                } else if (university.allStudentsArrived){
+                                    Thread.currentThread().interrupt();
+                                    Thread.sleep(0);
+                                }
+            
+                            
+                            } catch (InterruptedException e) {
+                                // when interrupted, TA thread stops
+                                break;
+                            }
+                        }
+                    }
+                });
                 threads[i+1].start();
             }
 
+            // 5 Student Threads
             for (int i = 0; i < 5; i++) {
-                threads[i+k+1] = new Thread(new Student(i, university, threads[0]));
+                final int studentId = i;
+                threads[i+k+1] = new Thread(new Runnable() {
+                    Random random = new Random();
+                    @Override
+                    public void run() {
+                        // thread keeps acting until it gets interrupted when all students arrive
+                        while (!Thread.currentThread().isInterrupted() && !university.allStudentsArrived){
+                            try {
+                                // sleeps for random time between 10 and 60 seconds then arrives
+                                Thread.sleep(random.nextInt(50000) + 10000);
+                                System.out.println("a grad student " + studentId + " arrives");
+                                university.studentArrives(professorThread, Thread.currentThread());
+                            } catch (InterruptedException e) {
+                                // when interrupted, student thread stops
+                                break;
+                            }
+                        }
+                    }
+                });
                 threads[i+k+1].start();
             }
 
-            
+            // join all threads
             for (int i = 0; i < k + 6; i++) {
                 threads[i].join();
             }
@@ -50,16 +124,22 @@ public class q2 {
             e.printStackTrace();
         }
     }
-
+    
+    // Base of the monitor, contains the lock and conditions and shared variables
     public static class University {
         private final Lock lock = new ReentrantLock();
+        // TA condition: wait for 3 TAs to be available
         private final Condition taCondition = lock.newCondition();
+        // Student condition: wait for all students to arrive
         private final Condition studentCondition = lock.newCondition();
         private int k;
         private int q;
+        // counter for TAs with questions
         private int taCount = 0;
+        // counter for students arrived
         private int studentCount = 0;
         private boolean allStudentsArrived = false;
+        // list of current TAs with questions
         private final List<Integer> currentTAs = new ArrayList<>();
 
         public University(int k, int q){
@@ -70,22 +150,21 @@ public class q2 {
         public void taQuestion(int id, Thread taThread) throws InterruptedException{
             lock.lock();
             try {
+                // add TA to the list of TAs with questions, increment counter
                 currentTAs.add(id);
                 taCount++;
                 while (taCount < 3) {
+                    // check if all students have arrived, if so, interrupt TA thread, otherwise wait
                     if (allStudentsArrived){
-                        System.out.println("TA interrupted by student " + id);
                         taThread.interrupt();
                     }
                     taCondition.await();
                 } 
 
+                // if 3 TAs are available, signal 2 waiting TAs for questions to be answered
                 taCondition.signal();
                 taCondition.signal();
-                if (allStudentsArrived){
-                    System.out.println("TA interrupted by second student " + id);
-                    taThread.interrupt();
-                }
+                
             } finally {
                 lock.unlock();
             }
@@ -95,26 +174,30 @@ public class q2 {
         public void answerQuestions() throws InterruptedException{
             lock.lock();
             try {
+                // wait for 3 TAs to be available
                 while (taCount < 3 && !allStudentsArrived){
                     taCondition.await();
                 }
 
+                // if all students have arrived, TA session ends, check interrupt flag with sleep(0) for thread to be interrupted
                 if (allStudentsArrived) {
-                    studentCondition.signalAll();
                     try {
                         Thread.sleep(0);
                     } catch (InterruptedException e){
                         throw e;
                     }
                 } else {
+                    // answer questions of 3 TAs, first 3 TAs in the list
                     System.out.println("a group of TAs starts to be seen by P " + currentTAs.get(0) + " " + currentTAs.get(1) + " " + currentTAs.get(2));
                     try {
+                        // takes 0.5s to answer questions
                         Thread.sleep(500);
                         System.out.println("a group of TAs finishes to be seen by P");
                     } catch (InterruptedException e){
                         throw e;
                     }
                     
+                    // remove answered TAs from the list, decrement counter
                     for (int i = 0; i < 3; i++){
                         if (currentTAs.size() == 0){
                             break;
@@ -132,10 +215,12 @@ public class q2 {
         public void studentArrives(Thread professorThread, Thread studentThread) throws InterruptedException{
             lock.lock();
             try {
+                // increment student counter, if less than 5, wait for other students
                 studentCount++;
                 if (studentCount < 5){
                     studentCondition.await();
                 }
+                // if all students have arrived, interrupt professor thread, student thread, wake up all TAs, will interupt themselves
                 if (studentCount == 5){
                     allStudentsArrived = true;
                     professorThread.interrupt();
@@ -146,110 +231,11 @@ public class q2 {
                 } else if (studentCount > 5){
                     studentThread.interrupt();
                 }
-                studentCondition.await();
             } finally {
                 lock.unlock();
             }
         }
     }
-
-    // Professor Thread
-    public static class Professor implements Runnable {
-        private final University university;
-
-        public Professor(University university){
-            this.university = university;
-        }
-
-        @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted()){
-                try {
-                    university.answerQuestions();
-                    if (university.allStudentsArrived){
-                        break;
-                    }
-                } catch (InterruptedException e) {
-                    university.lock.lock();
-                    try {
-                        System.out.println("a grad student interrupts a TA session");
-                        System.out.println("P wakes their grad students");
-                        university.studentCondition.signalAll();
-                        System.out.println("all grad students have been woken");
-                    } finally {
-                        university.lock.unlock();
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    // TA Thread
-    public static class TA implements Runnable {
-        private final int id;
-        private final University university;
-        private final Random random = new Random();
-
-        public TA(int id, University university){
-            this.id = id;
-            this.university = university;
-        }
-
-        @Override
-        public void run() {
-            while(!Thread.currentThread().isInterrupted()){
-                try {
-                    Thread.sleep(1000);
-                    if (random.nextInt(100) < university.q && !university.allStudentsArrived){
-                        System.out.println("a TA " + id + " comes up with a question");
-                        university.taQuestion(id, Thread.currentThread());
-                        
-                    } else if (university.allStudentsArrived){
-                        System.out.println("a TA " + id + " is interrupted without a question");
-                        Thread.currentThread().interrupt();
-                        Thread.sleep(0);
-                    }
-
-                
-                } catch (InterruptedException e) {
-                    System.out.println("a TA " + id + " is interrupted");
-                    break;
-                }
-            }
-            
-        
-        }
-    
-
-    }
-
-    // Student Thread
-    public static class Student implements Runnable {
-        private final int id;
-        private final University university;
-        private final Thread professorThread;
-        private final Random random = new Random();
-
-        public Student(int id, University university, Thread professorThread){
-            this.id = id;
-            this.university = university;
-            this.professorThread = professorThread;
-        }
-
-        @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted() && !university.allStudentsArrived){
-                try {
-                    Thread.sleep(random.nextInt(50000) + 10000);
-                    System.out.println("a grad student " + id + " arrives");
-                    university.studentArrives(professorThread, Thread.currentThread());
-                } catch (InterruptedException e) {
-                    System.out.println("a grad student " + id + " is interrupted");
-                    break;
-                }
-            }
-        }
-    }
-        
 }
+
+    

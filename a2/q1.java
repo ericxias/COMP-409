@@ -105,7 +105,6 @@ public class q1 {
                         // list to store moves
                         List<int[]> moves = new ArrayList<>();
                         moves.add(new int[]{x, y});
-                        // System.out.println(x + " " + y + " " + grid[x][y].getLetter());
 
                         // pre-select a sequence of up to 7 random moves
                         for (int j = 0; j < 7; j++){
@@ -114,26 +113,26 @@ public class q1 {
                             int curry = current[1];
                             int[] nextMove = getNextMove(currx, curry, n, moves);
                             moves.add(nextMove);
-                            // System.out.println(nextMove[0] + " " + nextMove[1] + " " + grid[nextMove[0]][nextMove[1]].getLetter());
                         }
                         
                         // check if sequence forms words (3 letters or more)
                         for (int j = 3; j <= moves.size(); j++){
                             String word = "";
+                            // while move sequence is being checked, synchronize so no other thread can retrieve the locks -> stops deadlock with Mutual Exclusion
                             synchronized (grid){
                                 try {
+                                    // iterate through the sequence of moves, append the letters to form a word, and check if each word is in the dictionary
                                     for (int k = 0; k < j; k++){
                                 
                                         int[] cell = moves.get(k);
                                         word += grid[cell[0]][cell[1]].getLetter();
 
-                                        // System.out.println(word);
                                         grid[cell[0]][cell[1]].getLock().lock();
                                         if (dictionary.contains(word.toLowerCase())){
-                                            // System.out.println("Found word: " + word + grid[x][y].getWords());
                                             if (!grid[x][y].getWords().contains(word)){
                                                 grid[x][y].addWord(word);
                                             }
+                                            // add word to all cells in the sequence
                                             for (int z = 0; z < k + 1; z++  ){
                                                 int[] wordCell = moves.get(z);
                                                 if (!grid[wordCell[0]][wordCell[1]].getWords().contains(word)){
@@ -144,6 +143,7 @@ public class q1 {
                                     }
                            
                                     } finally {
+                                        // unlock all cells in the sequence
                                         for (int z = 0; z < j; z ++){
                                             int[] wordCell = moves.get(z);
                                             grid[wordCell[0]][wordCell[1]].getLock().unlock();
@@ -152,6 +152,7 @@ public class q1 {
                                 }
                             }
                             try {
+                                // sleep for 20ms
                                 Thread.sleep(20);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
