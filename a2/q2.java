@@ -11,7 +11,7 @@ public class q2 {
     public static void main(String[] args){
         
         if (args.length != 2 || Integer.parseInt(args[0]) <= 3 || Integer.parseInt(args[1]) < 0 || Integer.parseInt(args[1]) > 100){
-            System.out.println("Usage: java q2.java <k > 3> <0 < q < 100");
+            System.out.println("Usage: java q2.java <k > 3> <0 < q < 100>");
             System.exit(1);
         }
 

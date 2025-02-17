@@ -1,0 +1,53 @@
+If Java had SIGNAL_AND_WAIT semantics, the design can be further simplified. As the program is progressing, the Professor
+thread is initially waiting for any signal to occur. As each TA comes up with a question, it begins to wait for other TA's 
+to have come up with questions. When a third TA comes up with a question, it would then signal to the 2 waiting TA threads
+to wake them, and signal the Professor thread to answer the questions. After the questions are answered (0.5s), the Professor
+would then signal the remaining TA threads that the questions have been answered. The TA threads would then again check if 3 TAs 
+contain questions, and the process repeats. As the threads are sleeping or waiting for a condition to act, when the last student 
+arrives, it would simply utilize SIGNAL_AND_WAIT to signal the Professor  thread that all students have arrived at the university. 
+This would then cause the Professor thread to acknowledge that the condition that all students have arrived has been met, and use 
+SIGNAL_AND_WAIT to signal the TA and rest of the  Student threads that the condition has been met. This would then cause all the 
+threads to print any final lines before terminating.
+
+
+Sample output of k = 9, q = 10:
+PS C:\Users\xiayi\Desktop\COMP-409\a2> java q2.java 9 10
+a TA 1 comes up with a question
+a TA 8 comes up with a question
+a TA 7 comes up with a question
+a group of TAs starts to be seen by P 1 8 7
+a group of TAs finishes to be seen by P
+a TA 5 comes up with a question
+a TA 7 comes up with a question
+a TA 2 comes up with a question
+a group of TAs starts to be seen by P 5 7 2
+a group of TAs finishes to be seen by P
+a grad student 4 arrives
+a grad student 1 arrives
+a TA 6 comes up with a question
+a TA 3 comes up with a question
+a TA 2 comes up with a question
+a group of TAs starts to be seen by P 6 3 2
+a group of TAs finishes to be seen by P
+a TA 2 comes up with a question
+a grad student 3 arrives
+a TA 0 comes up with a question
+a TA 4 comes up with a question
+a group of TAs starts to be seen by P 2 0 4
+a group of TAs finishes to be seen by P
+a TA 8 comes up with a question
+a TA 4 comes up with a question
+a grad student 0 arrives
+a TA 6 comes up with a question
+a group of TAs starts to be seen by P 8 4 6
+a group of TAs finishes to be seen by P
+a TA 6 comes up with a question
+a TA 0 comes up with a question
+a TA 7 comes up with a question
+a group of TAs starts to be seen by P 6 0 7
+a group of TAs finishes to be seen by P
+a grad student 2 arrives
+a grad student interrupts a TA session
+P wakes their grad students
+all grad students have been woken
+All threads have finished

@@ -118,16 +118,28 @@ public class q1 {
                         // check if sequence forms words (3 letters or more)
                         for (int j = 3; j <= moves.size(); j++){
                             String word = "";
-                            // while move sequence is being checked, synchronize so no other thread can retrieve the locks -> stops deadlock with Mutual Exclusion
+                            // while move sequence is being checked, synchronize so no other thread can retrieve the locks
                             synchronized (grid){
                                 try {
+                                    // acquire all locks in the sequence before checking if the word is in the dictionary
+                                    boolean allLocked = false;
+                                    while (!allLocked) {
+                                        allLocked = true;
+                                        for (int z = 0; z < j; z++){
+                                            int[] wordCell = moves.get(z);
+                                            if (!grid[wordCell[0]][wordCell[1]].getLock().tryLock()){
+                                                allLocked = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+
                                     // iterate through the sequence of moves, append the letters to form a word, and check if each word is in the dictionary
                                     for (int k = 0; k < j; k++){
                                 
                                         int[] cell = moves.get(k);
                                         word += grid[cell[0]][cell[1]].getLetter();
 
-                                        grid[cell[0]][cell[1]].getLock().lock();
                                         if (dictionary.contains(word.toLowerCase())){
                                             if (!grid[x][y].getWords().contains(word)){
                                                 grid[x][y].addWord(word);
