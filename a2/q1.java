@@ -43,7 +43,7 @@ public class q1 {
         // Create and draw the grid
         grid = new Cell[n][n];
         Random random = new Random(s);
-        for (int i = 0; i < 5; i++){
+        for (int i = 0; i < n; i++){
             for (int j = 0; j < n; j++){
                 // calculate total frequency, generate random letter based on frequency, and assign letter to grid
                 int totalFrequency = 0;
@@ -52,6 +52,7 @@ public class q1 {
                 }
                 int randomLetter = random.nextInt(totalFrequency);
                 int frequencySum = 0;
+                System.out.println("random " + randomLetter);
                 for (int x = 0; x < letters.size(); x++){
                     frequencySum += frequencies.get(x);
                     if (randomLetter < frequencySum){
