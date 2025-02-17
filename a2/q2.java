@@ -40,7 +40,6 @@ public class q2 {
                             // when student interrupts the professor thread, the professor thread will wake up all students (signalling all) then thread stops
                             university.lock.lock();
                             try {
-                                System.out.println("a grad student interrupts a TA session");
                                 System.out.println("P wakes their grad students");
                                 university.studentCondition.signalAll();
                                 System.out.println("all grad students have been woken");
@@ -176,14 +175,18 @@ public class q2 {
             try {
                 // wait for 3 TAs to be available
                 while (taCount < 3 && !allStudentsArrived){
+                    System.out.println("P goes to sleep");
                     taCondition.await();
                 }
+
+                System.out.println("P wakes");
 
                 // if all students have arrived, TA session ends, check interrupt flag with sleep(0) for thread to be interrupted
                 if (allStudentsArrived) {
                     try {
                         Thread.sleep(0);
                     } catch (InterruptedException e){
+                        // go to catch block of run() in professor thread
                         throw e;
                     }
                 } else {
@@ -194,6 +197,7 @@ public class q2 {
                         Thread.sleep(500);
                         System.out.println("a group of TAs finishes to be seen by P");
                     } catch (InterruptedException e){
+                        System.out.println(" a grad student interrupts a TA session");
                         throw e;
                     }
                     
@@ -223,6 +227,7 @@ public class q2 {
                 // if all students have arrived, interrupt professor thread, student thread, wake up all TAs, will interupt themselves
                 if (studentCount == 5){
                     allStudentsArrived = true;
+                    System.out.println(allStudentsArrived);
                     professorThread.interrupt();
                     studentThread.interrupt();
                     taCondition.signalAll();
