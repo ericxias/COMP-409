@@ -6,7 +6,7 @@ public class q1 {
     public static void main(String [] args){
         Random random = new Random();
 
-        if (args.length != 2 || Integer.parseInt(args[0]) < 100) {
+        if (args.length != 2 || Integer.parseInt(args[0]) >= 100) {
             System.out.println("Usage: java a3.q1 <k> <m>");
             return;
         }
@@ -19,7 +19,7 @@ public class q1 {
         
         // m operations for each thread
         Thread[] threadsA = new Thread[4];
-        long startTimeA = System.currentTimeMillis();
+        long startTimeA = System.nanoTime();
         for (int i = 0; i < 4; i++) {
             final int threadId = i;
             threadsA[i] = new Thread(new Runnable() {
@@ -58,9 +58,9 @@ public class q1 {
                 e.printStackTrace();
             }
         }
-        long endTimeA = System.currentTimeMillis();
+        long endTimeA = System.nanoTime();
 
-        long startTimeB = System.currentTimeMillis();
+        long startTimeB = System.nanoTime();
         Thread[] threadsB = new Thread[4];
         for (int i = 0; i < 4; i++) {
             final int threadId = i;
@@ -68,7 +68,7 @@ public class q1 {
                 @Override 
                 public void run() {
                     for (int i = 0; i < m; i ++) {
-                        if (random.nextInt(99) + 1 < k) {
+                        if (random.nextInt(100) + 1 < k) {
                             // read/write an existing array element
                             if (random.nextInt(1) == 0){
                                 // read
@@ -81,7 +81,8 @@ public class q1 {
                             // read/write one past end of array
                             if (random.nextInt(1) == 0){
                                 // read
-                                b.get(b.array.length + 1);
+                                b.get(b.array.length);
+                                //System.out.println(b.array.length + " from Thread " + threadId);
                             } else {
                                 // write
                                 b.set(b.array.length + 1, new Object());
@@ -100,10 +101,10 @@ public class q1 {
                 e.printStackTrace();
             }
         }
-        long endTimeB = System.currentTimeMillis();
+        long endTimeB = System.nanoTime();
 
-        System.out.println("Time taken for q1a: " + (endTimeA - startTimeA) + "ms");
-        System.out.println("Time taken for q1b: " + (endTimeB - startTimeB) + "ms");
+        System.out.println("Time taken for q1a: " + (endTimeA - startTimeA) + " ns");
+        System.out.println("Time taken for q1b: " + (endTimeB - startTimeB) + " ns");
         
         
     }

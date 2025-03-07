@@ -11,7 +11,7 @@ public class q1a {
 
     public Object get(int i) {
 
-    if (i > array.length) {
+    if (i >= array.length) {
             resize();
         }
 

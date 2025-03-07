@@ -13,8 +13,10 @@ public class q1b {
         while (resizing.get()) {
             // spin
         }
-        if (i > array.length) {
+        if (i >= array.length) {
+           // System.out.println(i + " " + array.length);
             resize();
+           // System.out.println("New Array Length " + array.length);
         }
         return array[i];
     }
@@ -41,6 +43,10 @@ public class q1b {
             } finally {
                 resizing.set(false);
             }
-        }       
+        } else {
+            while (resizing.get()) {
+                // spin
+            }
+        }   
     }
 }
