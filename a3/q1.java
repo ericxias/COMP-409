@@ -7,7 +7,7 @@ public class q1 {
         Random random = new Random();
 
         if (args.length != 2 || Integer.parseInt(args[0]) >= 100) {
-            System.out.println("Usage: java a3.q1 <k> <m>");
+            System.out.println("Usage: java q1.java <k> <m>");
             return;
         }
 
@@ -26,7 +26,7 @@ public class q1 {
                 @Override 
                 public void run() {
                     for (int i = 0; i < m; i ++) {
-                        if (random.nextInt(99) + 1 < k) {
+                        if (random.nextInt(99) + 1 < 100 - k) {
                             // read/write an existing array element
                             if (random.nextInt(1) == 0){
                                 // read
@@ -68,7 +68,7 @@ public class q1 {
                 @Override 
                 public void run() {
                     for (int i = 0; i < m; i ++) {
-                        if (random.nextInt(100) + 1 < k) {
+                        if (random.nextInt(100) + 1 < 100 - k) {
                             // read/write an existing array element
                             if (random.nextInt(1) == 0){
                                 // read
