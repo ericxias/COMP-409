@@ -17,31 +17,32 @@ public class q1 {
         q1a a = new q1a();
         q1b b = new q1b();
         
-        // m operations for each thread
+        // create 4 threads to run operations on q1a
         Thread[] threadsA = new Thread[4];
+        // milliseconds doesnt show significant difference, use nanoseconds
         long startTimeA = System.nanoTime();
+        
         for (int i = 0; i < 4; i++) {
-            final int threadId = i;
             threadsA[i] = new Thread(new Runnable() {
                 @Override 
                 public void run() {
+                    // m operations
                     for (int i = 0; i < m; i ++) {
+                        // 100 - k% chance of reading/writing an existing array element
                         if (random.nextInt(99) + 1 < 100 - k) {
-                            // read/write an existing array element
                             if (random.nextInt(1) == 0){
-                                // read
+                                // read existing array element
                                 a.get(random.nextInt(a.array.length));
                             } else {
-                                // write
+                                // write to existing array element
                                 a.set(random.nextInt(a.array.length), new Object());
                             }
                         } else {
-                            // read/write one past end of array
                             if (random.nextInt(1) == 0){
-                                // read
+                                // read one past end of array
                                 a.get(a.array.length + 1);
                             } else {
-                                // write
+                                // write to one past end of array
                                 a.set(a.array.length + 1, new Object());
                             }
                         }
@@ -60,31 +61,31 @@ public class q1 {
         }
         long endTimeA = System.nanoTime();
 
+        // create 4 threads to run operations on q1b
         long startTimeB = System.nanoTime();
         Thread[] threadsB = new Thread[4];
         for (int i = 0; i < 4; i++) {
-            final int threadId = i;
             threadsB[i] = new Thread(new Runnable() {
                 @Override 
                 public void run() {
+                    // m operations
                     for (int i = 0; i < m; i ++) {
+                        // 100 - k% chance of reading/writing an existing array element
                         if (random.nextInt(100) + 1 < 100 - k) {
-                            // read/write an existing array element
                             if (random.nextInt(1) == 0){
-                                // read
+                                // read existing array element
                                 b.get(random.nextInt(b.array.length));
                             } else {
-                                // write
+                                // write to existing array element
                                 b.set(random.nextInt(b.array.length), new Object());
                             }
                         } else {
-                            // read/write one past end of array
                             if (random.nextInt(1) == 0){
-                                // read
+                                // read one past end of array
                                 b.get(b.array.length);
                                 //System.out.println(b.array.length + " from Thread " + threadId);
                             } else {
-                                // write
+                                // write to one past end of array
                                 b.set(b.array.length + 1, new Object());
                             }
                         }
