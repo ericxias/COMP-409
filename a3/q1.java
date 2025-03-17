@@ -20,7 +20,7 @@ public class q1 {
         // create 4 threads to run operations on q1a
         Thread[] threadsA = new Thread[4];
         // milliseconds doesnt show significant difference, use nanoseconds
-        long startTimeA = System.nanoTime();
+        long startTimeA = System.currentTimeMillis();
         
         for (int i = 0; i < 4; i++) {
             threadsA[i] = new Thread(new Runnable() {
@@ -30,7 +30,7 @@ public class q1 {
                     for (int i = 0; i < m; i ++) {
                         // 100 - k% chance of reading/writing an existing array element
                         if (random.nextInt(99) + 1 < 100 - k) {
-                            if (random.nextInt(1) == 0){
+                            if (random.nextInt(2) == 0){
                                 // read existing array element
                                 a.get(random.nextInt(a.array.length));
                             } else {
@@ -38,12 +38,12 @@ public class q1 {
                                 a.set(random.nextInt(a.array.length), new Object());
                             }
                         } else {
-                            if (random.nextInt(1) == 0){
+                            if (random.nextInt(2) == 0){
                                 // read one past end of array
-                                a.get(a.array.length + 1);
+                                a.get(a.array.length);
                             } else {
                                 // write to one past end of array
-                                a.set(a.array.length + 1, new Object());
+                                a.set(a.array.length, new Object());
                             }
                         }
                     }
@@ -59,10 +59,10 @@ public class q1 {
                 e.printStackTrace();
             }
         }
-        long endTimeA = System.nanoTime();
+        long endTimeA = System.currentTimeMillis();
 
         // create 4 threads to run operations on q1b
-        long startTimeB = System.nanoTime();
+        long startTimeB = System.currentTimeMillis();
         Thread[] threadsB = new Thread[4];
         for (int i = 0; i < 4; i++) {
             threadsB[i] = new Thread(new Runnable() {
@@ -72,21 +72,20 @@ public class q1 {
                     for (int i = 0; i < m; i ++) {
                         // 100 - k% chance of reading/writing an existing array element
                         if (random.nextInt(100) + 1 < 100 - k) {
-                            if (random.nextInt(1) == 0){
+                            if (random.nextInt(2) == 0){
                                 // read existing array element
-                                b.get(random.nextInt(b.array.length));
+                                b.get(random.nextInt(b.array.get().length));
                             } else {
                                 // write to existing array element
-                                b.set(random.nextInt(b.array.length), new Object());
+                                b.set(random.nextInt(b.array.get().length), new Object());
                             }
                         } else {
-                            if (random.nextInt(1) == 0){
+                            if (random.nextInt(2) == 0){
                                 // read one past end of array
-                                b.get(b.array.length);
-                                //System.out.println(b.array.length + " from Thread " + threadId);
+                                b.get(b.array.get().length);
                             } else {
                                 // write to one past end of array
-                                b.set(b.array.length + 1, new Object());
+                                b.set(b.array.get().length, new Object());
                             }
                         }
                     }
@@ -102,10 +101,10 @@ public class q1 {
                 e.printStackTrace();
             }
         }
-        long endTimeB = System.nanoTime();
+        long endTimeB = System.currentTimeMillis();
 
-        System.out.println("Time taken for q1a: " + (endTimeA - startTimeA) + " ns");
-        System.out.println("Time taken for q1b: " + (endTimeB - startTimeB) + " ns");
+        System.out.println("Time taken for q1a: " + (endTimeA - startTimeA) + " ms");
+        System.out.println("Time taken for q1b: " + (endTimeB - startTimeB) + " ms");
         
         
     }
