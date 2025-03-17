@@ -76,17 +76,17 @@ public class q1a {
 
     public void resize(){    
         // create new array and locks with 10 more elements and copy over old elements
-        Object[] newArray = new Object[array.length + 10];
-        ReentrantLock[] newLocks = new ReentrantLock[array.length + 10];
+        Object[] tempArray = new Object[array.length + 10];
+        ReentrantLock[] tempLocks = new ReentrantLock[array.length + 10];
         for (int i = 0; i < array.length; i++) {
-            newArray[i] = array[i];
-            newLocks[i] = locks[i];
+            tempArray[i] = array[i];
+            tempLocks[i] = locks[i];
         }
-        for (int i = array.length; i < newLocks.length; i++) {
-            newLocks[i] = new ReentrantLock();
+        for (int i = array.length; i < tempLocks.length; i++) {
+            tempLocks[i] = new ReentrantLock();
         }
-        array = newArray;
-        locks = newLocks;
+        array = tempArray;
+        locks = tempLocks;
         
     }
     

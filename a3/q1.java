@@ -29,7 +29,8 @@ public class q1 {
                     // m operations
                     for (int i = 0; i < m; i ++) {
                         // 100 - k% chance of reading/writing an existing array element
-                        if (random.nextInt(99) + 1 < 100 - k) {
+                        if (random.nextInt(101) < 100 - k) {
+                            // equal chance of reading or writing
                             if (random.nextInt(2) == 0){
                                 // read existing array element
                                 a.get(random.nextInt(a.array.length));
@@ -38,6 +39,7 @@ public class q1 {
                                 a.set(random.nextInt(a.array.length), new Object());
                             }
                         } else {
+                            // equal chance of reading or writing
                             if (random.nextInt(2) == 0){
                                 // read one past end of array
                                 a.get(a.array.length);
@@ -71,7 +73,8 @@ public class q1 {
                     // m operations
                     for (int i = 0; i < m; i ++) {
                         // 100 - k% chance of reading/writing an existing array element
-                        if (random.nextInt(100) + 1 < 100 - k) {
+                        if (random.nextInt(101) < 100 - k) {
+                            // equal chance of reading or writing
                             if (random.nextInt(2) == 0){
                                 // read existing array element
                                 b.get(random.nextInt(b.array.get().length));
@@ -80,6 +83,7 @@ public class q1 {
                                 b.set(random.nextInt(b.array.get().length), new Object());
                             }
                         } else {
+                            // equal chance of reading or writing
                             if (random.nextInt(2) == 0){
                                 // read one past end of array
                                 b.get(b.array.get().length);

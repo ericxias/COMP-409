@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class q1b {
     // resizable array, atomic reference for atomic r/w operations
     public volatile AtomicReference<Object[]> array;
+    // resizing boolean for atomic resizing and stopping other threads from acting on the array
     private final AtomicBoolean resizing = new AtomicBoolean(false);
 
     public q1b() {
@@ -44,11 +45,11 @@ public class q1b {
         if (resizing.compareAndSet(false, true)){
             try {
                 // create new array with 10 more elements and copy over old elements
-                Object[] newArray = new Object[array.get().length + 10];
+                Object[] tempArray = new Object[array.get().length + 10];
                 for (int i = 0; i < array.get().length; i++) {
-                    newArray[i] = array.get()[i];
+                    tempArray[i] = array.get()[i];
                 }
-                array.set(newArray);
+                array.set(tempArray);
             } finally {
                 // resizing done, set resizing to false
                 resizing.set(false);
