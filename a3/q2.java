@@ -43,7 +43,12 @@ public class q2 {
             // starting index of the substring to be parsed through by each thread
             // if last thread that deals with the remainder of the string, endIndex = n, else endIndex = startIndex + n/t
             int startIndex = i * (n/t);
-            int endIndex = (i == t - 1) ? n : startIndex + n/t;
+            int endIndex;
+            if (i == t - 1){
+                endIndex = n;
+            } else {
+                endIndex = startIndex + (n/t);
+            }
 
             executor.execute(new Runnable() {
                 @Override
@@ -61,7 +66,7 @@ public class q2 {
                             f--;
                         }
                         m = Math.min(m, f);
-                        // if f is not properly matched or the minimum counter value is negative, set b to false
+                        // if f is not properly matched or the m is negative, set b to false
                         if (f != 0 || m < 0){
                             b = false;
                         } else {
