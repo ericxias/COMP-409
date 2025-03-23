@@ -1,6 +1,7 @@
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int main(int argc, char *argv[]) {
     // check args
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
     // counters for nonzero cols and vals
     int total_nonzero_col = 0;
     int total_nonzero_val = 0;
+    srand(s);
 
     // openmp api to set number of threads, each thread deals with a n grids
     omp_set_dynamic(0);
@@ -36,12 +38,15 @@ int main(int argc, char *argv[]) {
     // parallel for loop to construct the initial matrix
     /* 
     * 
-    * currently every row of the matrix is the same, ask TA if this is correct
+    * currently every row (outside the first) of the matrix is the same, ask TA if this is correct
     * 
     */
+
+    clock_t start_time = clock();
+
 #pragma omp parallel for private(j)
 for (i = 0; i < n; i++) {
-    
+    unsigned int rand_val;
     for (j = 0; j < n; j++) {
         
         // critical section to generate random number
@@ -133,6 +138,9 @@ for (i = 0; i < n; i++) {
         }
     }
 
+    clock_t end_time = clock();
+    double total_time = ((double)end_time - start_time) * 1000 / CLOCKS_PER_SEC;
+
     // print output
     printf("Rowptr array: ");
     for (i = 0; i < n + 1; i++) {
@@ -151,6 +159,8 @@ for (i = 0; i < n; i++) {
         printf("%d ", vals[i]);
     }
     printf("\n");
+
+    printf("Time taken: %f ms\n", total_time);
 
     // free memory
     free(vals);
