@@ -45,26 +45,26 @@ int main(int argc, char *argv[]) {
     clock_t start_time = clock();
 
 #pragma omp parallel for private(j)
-for (i = 0; i < n; i++) {
-    unsigned int rand_val;
-    for (j = 0; j < n; j++) {
+    for (i = 0; i < n; i++) {
+        unsigned int rand_val;
+        for (j = 0; j < n; j++) {
         
-        // critical section to generate random number
-        // rand_r not available in windows, use critical section instead
-        int rand_val;
+            // critical section to generate random number
+            // rand_r not available in windows, use critical section instead
+            int rand_val;
         #pragma omp critical
         {
             rand_val = rand();
         }
 
-        // if random number is less than p, set to 0, else set to 1
-        if (rand_val % 100 < p * 100) {
-            matrix[i][j] = 0;
-        } else {
-            matrix[i][j] = 1;
+            // if random number is less than p, set to 0, else set to 1
+            if (rand_val % 100 < p * 100) {
+                matrix[i][j] = 0;
+            } else {
+                matrix[i][j] = 1;
+            }
         }
     }
-}
 
     // print the initial matrix
     printf("Initial matrix:\n");
