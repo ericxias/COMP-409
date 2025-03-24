@@ -7,34 +7,40 @@
 char* generateString(int n) {
     char *str = (char *)malloc((n + 1) * sizeof(char));
     for (int i = 0; i < n; i++) {
+        // random number between 0 and 9
         str[i] = '0' + (rand() % 10);
     }
+    // end string
     str[n] = '\0';
     return str;
 }
 
-// let 0 = OK, 1 = Q1, 2 = Q2
+// 0 = OK, 1 = left state, 2 = right state
 int main(int argc, char *argv[]) {
     if (argc != 3 || atoi(argv[1]) < 0 || atoi(argv[1]) >= atoi(argv[2])) {
-        printf("Usage: <t> <n>, n > t\n");
+        printf("Usage: <t> <n>, n > t >= 0\n");
         return 1;
     }
 
+    // set vars, t = deterministic + optimistic threads
     int t = atoi(argv[1]) + 1;
     int n = atoi(argv[2]);
     bool acceptState = false;
 
+    // transition table to store the state transitions of threads
     int (*transitions)[3] = malloc(t * sizeof(*transitions));
 
     char *inputString = generateString(n);
-    // printf("Input string: %s\n", inputString);
+    printf("Input string: %s\n", inputString);
 
+    // convert input string to int array
     int *inputs = (int *)malloc(n * sizeof(int));
 
     for (int i = 0; i < n; i++) {
         inputs[i] = inputString[i] - '0';
     }
 
+    // set number of threads
     omp_set_dynamic(0);
     omp_set_num_threads(t);
 
@@ -42,10 +48,12 @@ int main(int argc, char *argv[]) {
 
 #pragma omp parallel
     {
+        // use thread id to determine start and end indexes of the input array for each thread
         int threadId = omp_get_thread_num();
         int start = threadId * (n / t);
         int end = (threadId == t - 1) ? n : start + (n / t);
         
+        // iterate through the input array, optimistic approach with storing transitions of all 3 states
         for (int i = 0; i < 3; i++) {
             int currentState = i;
             for (int j = start; j < end; j++) {
@@ -82,15 +90,16 @@ int main(int argc, char *argv[]) {
                 }
                 // printf("Thread %d: %d, input: %d, index: %d, start: %d, end: %d, prevstate: %d, state: %d\n", threadId, currentState, inputs[j], j, start, end, previousState, currentState);
             }
+            // store the final state of the thread for each initial state
             transitions[threadId][i] = currentState;
         }
 
     }
 
+    // determine final DFA state
     int finalState = 0;
     for (int i = 0; i < t; i++) {
         finalState = transitions[i][finalState];
-       // printf("Thread %d: %d\n", i, finalState);
     }
 
     // printf("Final state: %d\n", finalState);
@@ -99,9 +108,12 @@ int main(int argc, char *argv[]) {
     }
     clock_t endTime = clock();
     double totalTime = ((double) (endTime - startTime) ) * 1000 / CLOCKS_PER_SEC;
+    
+    // print output
     printf("%s\n", acceptState ? "true" : "false");
     printf("Time taken: %f ms\n", totalTime);
 
+    // free memory
     free(transitions);
     free(inputs);
     free(inputString);

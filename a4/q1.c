@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     }
 
     clock_t endTime = clock();
-    double totalTime = ((double)endTime - startTime) * 1000 / CLOCKS_PER_SEC;
+    double totalTime = ((double) (endTime - startTime)) * 1000 / CLOCKS_PER_SEC;
 
     // print output
     printf("Rowptr array: ");
