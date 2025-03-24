@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     * 
     */
 
-    clock_t start_time = clock();
+    clock_t startTime = clock();
 
 #pragma omp parallel for private(j)
     for (i = 0; i < n; i++) {
@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    clock_t end_time = clock();
-    double total_time = ((double)end_time - start_time) * 1000 / CLOCKS_PER_SEC;
+    clock_t endTime = clock();
+    double totalTime = ((double)endTime - startTime) * 1000 / CLOCKS_PER_SEC;
 
     // print output
     printf("Rowptr array: ");
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
-    printf("Time taken: %f ms\n", total_time);
+    printf("Time taken: %f ms\n", totalTime);
 
     // free memory
     free(vals);
