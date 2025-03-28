@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     }
 
     // set number of threads
-    omp_set_dynamic(0);
+    omp_set_dynamic(1);
     omp_set_num_threads(t);
 
     clock_t startTime = clock();

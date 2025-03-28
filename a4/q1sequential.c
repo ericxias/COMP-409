@@ -31,8 +31,6 @@ int main(int argc, char *argv[]) {
     int total_nonzero_val = 0;
 
     // openmp api to set number of threads, each thread deals with a n grids
-    omp_set_dynamic(0);
-    omp_set_num_threads(n);
 
     // parallel for loop to construct the initial matrix
     /* 
@@ -41,12 +39,10 @@ int main(int argc, char *argv[]) {
     * 
     */
 
+    //clock_t startTime = clock();
     struct timeval startTime, endTime;
     gettimeofday(&startTime, NULL);
 
-    // clock_t startTime = clock();
-
-#pragma omp parallel for private(j)
     // print number of threads
     for (i = 0; i < n; i++) {
         // set seed for random number generation
@@ -73,10 +69,7 @@ int main(int argc, char *argv[]) {
     }
 
     // parallel section for CSR formation
-#pragma omp parallel sections
-    {
-#pragma omp section
-        {   
+
             rowptr[0] = 0;
 
             // iterate through the matrix to find the number of 1s in each row and increment the total for each 1
@@ -89,10 +82,9 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-        }
+        
 
-#pragma omp section
-        {
+
             // set local variables
             int x, y;
             int local_nonzero_col = 0;
@@ -110,10 +102,9 @@ int main(int argc, char *argv[]) {
 
             // set the total number of non-zero columns
             total_nonzero_col += local_nonzero_col;
-        }
+        
 
-#pragma omp section
-        {
+
             // set local variables
             int a, b;
             int local_nonzero_val = 0;
@@ -131,14 +122,14 @@ int main(int argc, char *argv[]) {
 
             // set the total number of non-zero values
             total_nonzero_val += local_nonzero_val;
-        }
-    }
+        
+    
 
-    gettimeofday(&endTime, NULL);
-    //clock_t endTime = clock();
-    double totalTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0; // seconds to ms
-    totalTime += (endTime.tv_usec - startTime.tv_usec) / 1000.0; // microseconds to ms
-    //totalTime = ((double) (endTime - startTime)) * 1000 / CLOCKS_PER_SEC;
+            gettimeofday(&endTime, NULL);
+            //clock_t endTime = clock();
+            double totalTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0; // seconds to ms
+            totalTime += (endTime.tv_usec - startTime.tv_usec) / 1000.0; // microseconds to ms
+            //totalTime = ((double) (endTime - startTime)) * 1000 / CLOCKS_PER_SEC;
 
     // print output
     printf("Rowptr array: ");
