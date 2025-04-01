@@ -10,3 +10,7 @@ To run:
 ./q1 <n> <p> <s>
 ./q2 <t> <n>
 
+
+for sequential:
+gcc q1sequential.c -o q1sequential
+./q1sequential.c -o <n> <p> <s>

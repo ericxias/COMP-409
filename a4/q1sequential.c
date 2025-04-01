@@ -27,9 +27,9 @@ int main(int argc, char *argv[]) {
     int *vals = (int *)malloc(n * n * sizeof(int));
 
     // counters for nonzero cols and vals
-    int total_nonzero_col = 0;
-    int total_nonzero_val = 0;
-    // time sequential section
+    int totalNonzeroCol = 0;
+    int totalNonzeroVal = 0;
+    // time parallel section, based on https://people.cs.rutgers.edu/~pxk/416/notes/c-tutorials/gettime.html
     struct timespec startTime, endTime;
     clock_gettime(CLOCK_MONOTONIC, &startTime);
     
@@ -47,10 +47,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-   
-    clock_gettime(CLOCK_MONOTONIC, &endTime);
-
-
     rowptr[0] = 0;
 
     // iterate through the matrix to find the number of 1s in each row and increment the total for each 1
@@ -64,52 +60,48 @@ int main(int argc, char *argv[]) {
         }
     }
         
-
-
     // set local variables
     int x, y;
-    int local_nonzero_col = 0;
+    int nonzeroCol = 0;
             
     // iterate through the matrix to find the non-zero grids, and store the column number
     for (x = 0; x < n; x++) {
         for (y = 0; y < n; y++) {
 
             if (matrix[x][y] == 1) {
-                cols[local_nonzero_col] = y;
-                local_nonzero_col++;
+                cols[nonzeroCol] = y;
+                nonzeroCol++;
             }
         }
     }
 
     // set the total number of non-zero columns
-    total_nonzero_col += local_nonzero_col;
+    totalNonzeroCol += nonzeroCol;
         
 
 
     // set local variables
     int a, b;
-    int local_nonzero_val = 0;
+    int nonzeroVal = 0;
 
     // iterate through the matrix to find the non-zero grids, and store the value
     for (a = 0; a < n; a++) {
         for (b = 0; b < n; b++) {
 
             if (matrix[a][b] == 1) {
-                vals[local_nonzero_val] = matrix[a][b];
-                local_nonzero_val++;
+                vals[nonzeroVal] = matrix[a][b];
+                nonzeroVal++;
             }
         }
     }
 
     // set the total number of non-zero values
-    total_nonzero_val += local_nonzero_val;
+    totalNonzeroVal += nonzeroVal;
     
     // end time for parallel section
-    //clock_gettime(CLOCK_MONOTONIC, &endTime);
-    long seconds = endTime.tv_sec - startTime.tv_sec;
-    long nanoseconds = endTime.tv_nsec - startTime.tv_nsec;
-    double totalTime = seconds * 1000.0 + nanoseconds / 1e6; // convert to milliseconds
-
+    clock_gettime(CLOCK_MONOTONIC, &endTime);
+    float totalTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0 + (endTime.tv_nsec - startTime.tv_nsec) / 1e6; // convert to milliseconds
+ 
      // print the initial matrix
      printf("Initial matrix:\n");
 
@@ -129,13 +121,13 @@ int main(int argc, char *argv[]) {
     printf("\n");
 
     printf("Cols array: ");
-    for (i = 0; i < total_nonzero_col; i++) {
+    for (i = 0; i < totalNonzeroCol; i++) {
         printf("%d ", cols[i]);
     }
     printf("\n");
 
     printf("Vals array: ");
-    for (i = 0; i < total_nonzero_val; i++) {
+    for (i = 0; i < totalNonzeroVal; i++) {
         printf("%d ", vals[i]);
     }
     printf("\n");

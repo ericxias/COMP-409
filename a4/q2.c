@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     int (*transitions)[3] = malloc(t * sizeof(*transitions));
 
     char *inputString = generateString(n);
-    //printf("Input string: %s\n", inputString);
+    printf("Input string: %s\n", inputString);
 
     // convert input string to int array
     int *inputs = (int *)malloc(n * sizeof(int));
@@ -44,24 +44,25 @@ int main(int argc, char *argv[]) {
     omp_set_dynamic(0);
     omp_set_num_threads(t);
 
-    // time parallel section
+    // time parallel section, based on https://people.cs.rutgers.edu/~pxk/416/notes/c-tutorials/gettime.html
     struct timespec startTime, endTime;
     clock_gettime(CLOCK_MONOTONIC, &startTime);
 
-#pragma omp parallel
-    {
-        // use thread id to determine start and end indexes of the input array for each thread
-        // thread 0 conducts first section, thread 1 conducts second section, etc.
-        int threadId = omp_get_thread_num();
-        int start = threadId * (n / t);
-        int end = (threadId == t - 1) ? n : start + (n / t);
-        
+#pragma omp parallel for
+    // section of input string for each thread
+    for (int x = 0; x < t; x++) {
         // iterate through the input array, optimistic approach with storing transitions of all 3 states
         for (int i = 0; i < 3; i++) {
+            // determine start and end indexes based on section of the input string determined by x
             int currentState = i;
+            int start = (n / t) * x;
+            int end = (x == t - 1) ? n : start + (n/t);
+
             for (int j = start; j < end; j++) {
                 int previousState = currentState;
+
                 // transition based on dfa
+                // OK state
                 if (previousState == 0) {
                     if (inputs[j] == 0 || inputs[j] == 9) {
                         currentState = 0;
@@ -72,6 +73,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
+                // Left state
                 if (previousState == 1) {
                     if (inputs[j] == 4 || inputs[j] == 8) {
                         currentState = 1;
@@ -82,6 +84,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
+                // Right state
                 if (previousState == 2) {
                     if (inputs[j] == 0 || inputs[j] == 3 || inputs[j] == 9) {
                         currentState = 2;
@@ -92,10 +95,9 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-            // store the final state of the thread for each initial state
-            transitions[threadId][i] = currentState;
+            // store the final state of the thread for each initial state based on section of the input string
+            transitions[x][i] = currentState;
         }
-
     }
 
     // determine final DFA state
@@ -104,17 +106,15 @@ int main(int argc, char *argv[]) {
         finalState = transitions[i][finalState];
     }
 
-    // printf("Final state: %d\n", finalState);
+    //printf("Final state: %d\n", finalState);
     if (finalState == 0) {
         acceptState = true;
     }
 
     // end time for parallel section
     clock_gettime(CLOCK_MONOTONIC, &endTime);
-    long seconds = endTime.tv_sec - startTime.tv_sec;
-    long nanoseconds = endTime.tv_nsec - startTime.tv_nsec;
-    double totalTime = seconds * 1000.0 + nanoseconds / 1e6; // convert to milliseconds
-    
+    float totalTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0 + (endTime.tv_nsec - startTime.tv_nsec) / 1e6; // convert to milliseconds
+
     // print output
     printf("%s\n", acceptState ? "true" : "false");
     printf("Time taken: %f ms\n", totalTime);
@@ -124,9 +124,7 @@ int main(int argc, char *argv[]) {
     free(inputs);
     free(inputString);
     return 0;
-    
-
-    
+       
 }
 
 
