@@ -1,7 +1,7 @@
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <time.h>
 
 int main(int argc, char *argv[]) {
     // check args
@@ -32,23 +32,15 @@ int main(int argc, char *argv[]) {
 
     // openmp api to set number of threads, each thread deals with a n grids
     omp_set_dynamic(0);
-    omp_set_num_threads(n);
+    omp_set_num_threads(omp_get_max_threads());
 
-    // parallel for loop to construct the initial matrix
-    /* 
-    * 
-    * currently every row (outside the first) of the matrix is the same, ask TA if this is correct
-    * 
-    */
-
-    struct timeval startTime, endTime;
-    gettimeofday(&startTime, NULL);
-
-    // clock_t startTime = clock();
+    // time parallel section
+    struct timespec startTime, endTime;
+    //clock_gettime(CLOCK_MONOTONIC, &startTime);
 
 #pragma omp parallel for private(j)
-    // print number of threads
     for (i = 0; i < n; i++) {
+        //printf("Thread %d is working on row %d\n", omp_get_thread_num(), i);
         // set seed for random number generation
         unsigned int seed = s + i;
         for (j = 0; j < n; j++) {
@@ -61,21 +53,14 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    clock_gettime(CLOCK_MONOTONIC, &startTime);
+    //clock_gettime(CLOCK_MONOTONIC, &endTime);
 
-    // print the initial matrix
-    printf("Initial matrix:\n");
-
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
-            printf("%d", matrix[i][j]);
-        }
-        printf("\n");
-    }
 
     // parallel section for CSR formation
 #pragma omp parallel sections
     {
-#pragma omp section
+        #pragma omp section
         {   
             rowptr[0] = 0;
 
@@ -107,7 +92,6 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-
             // set the total number of non-zero columns
             total_nonzero_col += local_nonzero_col;
         }
@@ -128,17 +112,27 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-
             // set the total number of non-zero values
             total_nonzero_val += local_nonzero_val;
         }
     }
+        
+    // end time for parallel section
+    clock_gettime(CLOCK_MONOTONIC, &endTime);
+    long seconds = endTime.tv_sec - startTime.tv_sec;
+    long nanoseconds = endTime.tv_nsec - startTime.tv_nsec;
+    double totalTime = seconds * 1000.0 + nanoseconds / 1e6; // convert to milliseconds
 
-    gettimeofday(&endTime, NULL);
-    //clock_t endTime = clock();
-    double totalTime = (endTime.tv_sec - startTime.tv_sec) * 1000.0; // seconds to ms
-    totalTime += (endTime.tv_usec - startTime.tv_usec) / 1000.0; // microseconds to ms
-    //totalTime = ((double) (endTime - startTime)) * 1000 / CLOCKS_PER_SEC;
+    // print the initial matrix
+    printf("Initial matrix:\n");
+
+    /*
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            printf("%d ", matrix[i][j]);
+        }
+        printf("\n");
+    }*/
 
     // print output
     printf("Rowptr array: ");

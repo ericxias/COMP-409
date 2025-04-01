@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     int (*transitions)[3] = malloc(t * sizeof(*transitions));
 
     char *inputString = generateString(n);
-    printf("Input string: %s\n", inputString);
+    //printf("Input string: %s\n", inputString);
 
     // convert input string to int array
     int *inputs = (int *)malloc(n * sizeof(int));
@@ -41,14 +41,17 @@ int main(int argc, char *argv[]) {
     }
 
     // set number of threads
-    omp_set_dynamic(1);
+    omp_set_dynamic(0);
     omp_set_num_threads(t);
 
-    clock_t startTime = clock();
+    // time parallel section
+    struct timespec startTime, endTime;
+    clock_gettime(CLOCK_MONOTONIC, &startTime);
 
 #pragma omp parallel
     {
         // use thread id to determine start and end indexes of the input array for each thread
+        // thread 0 conducts first section, thread 1 conducts second section, etc.
         int threadId = omp_get_thread_num();
         int start = threadId * (n / t);
         int end = (threadId == t - 1) ? n : start + (n / t);
@@ -88,7 +91,6 @@ int main(int argc, char *argv[]) {
                         currentState = 0;
                     }
                 }
-                // printf("Thread %d: %d, input: %d, index: %d, start: %d, end: %d, prevstate: %d, state: %d\n", threadId, currentState, inputs[j], j, start, end, previousState, currentState);
             }
             // store the final state of the thread for each initial state
             transitions[threadId][i] = currentState;
@@ -106,8 +108,12 @@ int main(int argc, char *argv[]) {
     if (finalState == 0) {
         acceptState = true;
     }
-    clock_t endTime = clock();
-    double totalTime = ((double) (endTime - startTime) ) * 1000 / CLOCKS_PER_SEC;
+
+    // end time for parallel section
+    clock_gettime(CLOCK_MONOTONIC, &endTime);
+    long seconds = endTime.tv_sec - startTime.tv_sec;
+    long nanoseconds = endTime.tv_nsec - startTime.tv_nsec;
+    double totalTime = seconds * 1000.0 + nanoseconds / 1e6; // convert to milliseconds
     
     // print output
     printf("%s\n", acceptState ? "true" : "false");
